@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features name="remedy-ticketing-features" xmlns="http://karaf.apache.org/xmlns/features/v1.4.0">
+    <repository>mvn:org.opennms.integration.api/karaf-features/${opennms.api.version.min}/xml</repository>
+
+    <feature name="remedy-ticketing" description="OpenNMS :: OPA :: Ticketing :: Remedy ITSM" version="${project.version}">
+        <feature>aries-blueprint</feature>
+        <feature version="${cxf.version}">cxf-http-client</feature>
+        <feature version="${cxf.version}">cxf-jaxb</feature>
+        <feature version="${cxf.version}">cxf-jaxws</feature>
+
+        <!-- the above features should already be available in OpenNMS core, but the `cxf-jxc-runtime` feature isn't
+             there, so we're including it (and commons-lang3) as an explicit bundle dependency so it shows up in the .kar -->
+        <bundle start-level="35" dependency="true">mvn:org.apache.commons/commons-lang3/${commons-lang3.version}</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf.xjc-utils/cxf-xjc-runtime/${cxf-xjc.version}</bundle>
+
+        <feature dependency="true" version="[${opennms.api.version.min},${opennms.api.version.max})">opennms-integration-api</feature>
+        <bundle>mvn:org.opennms.plugins.opa.ticketing.remedy/org.opennms.plugins.opa.ticketing.remedy.core/${project.version}</bundle>
+    </feature>
+
+</features>

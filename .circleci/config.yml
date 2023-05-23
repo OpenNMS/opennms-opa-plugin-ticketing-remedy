@@ -1,0 +1,222 @@
+version: 2.1
+
+executors:
+  build-executor:
+    docker:
+      - image: cimg/openjdk:8.0
+        environment:
+          MAVEN_OPTS: -Xmx1g
+
+orbs:
+  cloudsmith: cloudsmith/cloudsmith@1.0.5
+  sign-packages: opennms/sign-packages@2.3.0
+  #github-cli: circleci/github-cli@2.2.0
+
+workflows:
+  build-deploy:
+    jobs:
+      - build:
+          context:
+            - gpg-signing
+          filters:
+            tags:
+              only:
+                - /^v.*/
+      - tests:
+          requires:
+            - build
+          filters:
+            tags:
+              only:
+                - /^v.*/
+      - prepare-release:
+          requires:
+            - tests
+          filters:
+            tags:
+              only:
+                - /^v.*/
+            branches:
+              ignore: /.*/
+      #- github-cli/release:
+      #    context:
+      #      - github-releases
+      #    token: GH_TOKEN
+      #    tag: $CIRCLE_TAG
+      #    title: The $CIRCLE_TAG release
+      #    files: ~/output/.*
+      #    prerelease: true
+      #    #notes: changelog.md
+      #    requires:
+      #      - prepare-release
+      #    filters:
+      #      tags:
+      #        only:
+      #          - /^v.*/
+      #      branches:
+      #        ignore: /.*/
+      - publish-github-release:
+          context:
+            - github-releases
+          requires:
+            - prepare-release
+          filters:
+            tags:
+              only:
+                - /^v.*/
+            branches:
+              ignore: /.*/
+      #- deploy-packages:
+      #    context:
+      #      - gpg-signing
+      #      - cloudsmith-publish-account
+      #    requires:
+      #      - tests
+      #      - build-debian
+      #    filters:
+      #      tags:
+      #        only:
+      #          - /^v.*/
+      #      branches:
+      #        only:
+      #          - main
+      #          - /release-.*/
+
+
+jobs:
+  build:
+    executor: build-executor
+    resource_class: small
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: Compile source without tests
+          command: |
+            mvn -DskipITs=true -DskipTests=true clean install
+      - run:
+          name: Gather artifacts
+          command: |
+              mkdir ~/output
+              # We need a better logic here
+              find ~/project -type f -regex ".*.jar" -exec cp {} ~/output \;
+              find ~/project -type f -regex ".*.rpm" -exec cp {} ~/output \;
+              find ~/project -type f -regex ".*.deb" -exec cp {} ~/output \;
+              find ~/project -type f -regex ".*.kar" -exec cp {} ~/output \;
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output
+            - .m2
+            - project
+      - store_artifacts:
+          path: ~/output
+          destination: artifact-file
+
+  tests:
+    executor: build-executor
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Run integration tests
+          command: |
+            mvn -DskipITs=false -DskipTests=false clean install test
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} ~/junit/ \;
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+
+  deploy:
+    executor: build-executor
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+
+      - sign-packages/setup-env:
+          skip_if_forked_pr: true
+      - run:
+          name: Deploy to Maven
+          command: |
+            mvn -Prelease -s .circleci/.circleci.settings.xml -Ddisable.checkstyle=true -DskipTests -Dmaven.verify.skip=true -Dmaven.install.skip=true deploy
+
+  deploy-packages:
+    executor: cloudsmith/default
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: ~/
+
+      - cloudsmith/ensure-api-key
+      - cloudsmith/install-cli
+
+      - run:
+          name: Push packages to CloudSmith
+          command: .circleci/scripts/publish-cloudsmith.sh
+
+  prepare-release:
+    executor: build-executor
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Gather artifacts
+          command: |
+              mkdir ~/output
+              # We need a better logic here
+              find ~/project -type f -regex ".*.jar" -exec cp {} ~/output \;
+              find ~/project -type f -regex ".*.rpm" -exec cp {} ~/output \;
+              find ~/project -type f -regex ".*.deb" -exec cp {} ~/output \;
+              find ~/project -type f -regex ".*.kar" -exec cp {} ~/output \;
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output
+  publish-github-release:
+    executor: build-executor
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install GitHub CLI and Publish release on GitHub
+          command: |
+            if [ -z "${CIRCLE_TAG}" ]; then
+              echo "Skipping step as we don't have a tag!"
+            else
+              tag=${CIRCLE_TAG}
+
+              # Install GitHub CLI
+              type -p curl >/dev/null || sudo apt install curl -y
+              curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+              && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+              && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+              && sudo apt update \
+              && sudo apt install gh -y
+
+              gh release create $tag --title "$tag Release" --notes "$tag prerelease!" --prerelease --generate-notes
+
+              gh release upload $tag ~/output/*.jar
+            fi
+
+
+
+
