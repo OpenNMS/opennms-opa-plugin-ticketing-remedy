@@ -64,6 +64,8 @@ public class DefaultRemedyConfigDao {
 
     protected String getStringProperty(final String key) throws ConfigRetrievalException {
         final Dictionary<String, Object> props = getProperties();
+        if (props == null) return null;
+
         final Object value = props.get(key);
         return value == null? null : value.toString();
     }

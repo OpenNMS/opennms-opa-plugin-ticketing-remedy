@@ -8,13 +8,118 @@
         <feature version="${cxf.version}">cxf-jaxb</feature>
         <feature version="${cxf.version}">cxf-jaxws</feature>
 
-        <!-- the above features should already be available in OpenNMS core, but the `cxf-jxc-runtime` feature isn't
-             there, so we're including it (and commons-lang3) as an explicit bundle dependency so it shows up in the .kar -->
+        <!-- the above features should already (mostly) be available in OpenNMS core, but the `cxf-jxc-runtime` feature isn't
+             there, so we're including a few things as an explicit bundle dependency so they show up in the .kar -->
         <bundle start-level="35" dependency="true">mvn:org.apache.commons/commons-lang3/${commons-lang3.version}</bundle>
+        <bundle start-level="40">mvn:org.apache.cxf.karaf/cxf-karaf-commands/${cxf.version}</bundle>
+        <bundle start-level="40">mvn:jakarta.servlet/jakarta.servlet-api/4.0.4</bundle>
         <bundle start-level="40" dependency="true">mvn:org.apache.cxf.xjc-utils/cxf-xjc-runtime/${cxf-xjc.version}</bundle>
 
         <feature dependency="true" version="[${opennms.api.version.min},${opennms.api.version.max})">opennms-integration-api</feature>
         <bundle>mvn:org.opennms.plugins.opa.ticketing.remedy/org.opennms.plugins.opa.ticketing.remedy.core/${project.version}</bundle>
+
+        <config name="org.opennms.plugins.opa.ticketing.remedy">
+### Authentication
+
+# the username to access Remedy
+username=opennms
+
+# the password to access Remedy
+password=AReallyCoolPassword
+
+# optional authentication type
+#authentication=ARSystem
+
+# optional locale and timezone to use in requests
+#locale=en_US
+#timezone=EST
+
+### Accessing the Remedy Web Services
+
+# the endpoint URL and port name for the HPD web service
+endpoint=http://172.20.0.76:8180/arsys/services/ARService?server=itts3h&amp;webService=HPD_IncidentInterface_WS
+portname=HPD_IncidentInterface_WSPortTypeSoap
+
+# the endpoint URL and port name for the Create-HPD web service
+createendpoint=http://172.20.0.76:8180/arsys/services/ARService?server=itts3h&amp;webService=HPD_IncidentInterface_Create_WS
+createportname=HPD_IncidentInterface_Create_WSPortTypeSoap
+
+### Ticket Creation and Service Information
+#
+# a colon-separated list of target groups for creating tickets
+targetgroups=GroupA:GroupB
+
+# for each target group, create an assignedroup, assignedsupportcompany, and assignedsupportorganization
+assignedgroup.GroupA=Group A
+assignedgroup.GroupB=Group B
+assignedsupportcompany.GroupA=My Company
+assignedsupportcompany.GroupB=My Company
+assignedsupportorganization.GroupA=Monitoring Department
+assignedsupportorganization.GroupB=Monitoring Department
+
+# default assigned group
+assignedgroup=GroupA
+# default assigned support company
+assignedsupportcompany=My Company
+# default assigned support organization
+assignedsupportorganization=Monitoring Department
+
+# first and last name must match a user in Remedy
+firstname=OpenNMS
+lastname=User
+
+# the serviceCI (required)
+serviceCI=SomeServiceCI
+# the serviceCIReconID (mandatory)
+serviceCIReconID=RE00505688005e3s-nTg4KEI5gFSov
+
+# categorization tiers (required)
+categorizationtier1=Incident
+categorizationtier2=Generic
+categorizationtier3=Non bloccante
+
+# service type (required, choose 1)
+#serviceType=User Service Restoration
+#serviceType=User Service Request
+#serviceType=Infrastructure Restoration
+serviceType=Infrastructure Event
+
+# reported source (required, choose 1)
+reportedSource=Direct Input
+#reportedSource=Email
+#reportedSource=External Escalation
+#reportedSource=Fax
+#reportedSource=Systems Management
+#reportedSource=Phone
+#reportedSource=Voice Mail
+#reportedSource=Walk In
+#reportedSource=Web
+#reportedSource=Other
+
+# impact (required, choose 1)
+#impact=1-Extensive/Widespread
+#impact=2-Significant/Large
+#impact=3-Moderate/Limited
+impact=4-Minor/Localized
+
+# urgency (required, choose 1)
+#urgency=1-Critical
+#urgency=2-High
+#urgency=3-Medium
+urgency=4-Low
+
+# the reason code used when reopening a ticket
+reason.reopen=Pending Original Incident
+
+# the reason code used when a ticket is closed by OpenNMS
+reason.resolved=Automated Resolution Reported
+
+# the reason code used when a ticket is cancelled in the OpenNMS GUI
+reason.cancelled=No longer Valid
+
+# the resolution used when a ticket is closed or cancelled
+resolution=Closed from OpenNMS
+        </config>
     </feature>
 
 </features>
