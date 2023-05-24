@@ -56,7 +56,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 
 import com.github.skjolber.mockito.soap.SoapServiceExtension;
 
-class RemedyTicketerPluginIT {
+class RemedyTicketerPluginTest {
     private HPDIncidentInterfaceWSPortTypePortType mockIncidentPort;
     private HPDIncidentInterfaceCreateWSPortTypePortType mockIncidentCreatePort;
 
