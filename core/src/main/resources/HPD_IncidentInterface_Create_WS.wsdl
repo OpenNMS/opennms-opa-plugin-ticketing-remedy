@@ -256,7 +256,7 @@
 
          <wsdl:input>
 
-            <soap:header message="s0:HelpDesk_Submit_ServiceSoapIn" part="ARAuthenticate" use="literal" required="true">
+            <soap:header message="s0:HelpDesk_Submit_ServiceSoapIn" part="ARAuthenticate" use="literal">
 
             </soap:header>
 

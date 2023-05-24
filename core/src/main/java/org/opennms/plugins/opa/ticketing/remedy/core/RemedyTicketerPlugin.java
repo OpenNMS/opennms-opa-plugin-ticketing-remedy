@@ -98,6 +98,9 @@ public class RemedyTicketerPlugin implements TicketingPlugin {
 
     private static final int MAX_SUMMARY_CHARS=99;
 
+    HPDIncidentInterfaceWSPortTypePortType readPort;
+    HPDIncidentInterfaceCreateWSPortTypePortType createPort;
+
     // Remember:
     // Summary ---> alarm logmsg
     // Details ---> alarm descr
@@ -134,7 +137,12 @@ public class RemedyTicketerPlugin implements TicketingPlugin {
         }
 
         try {
-            GetOutputMap outputmap = port.helpDeskQueryService(getRemedyInputMap(ticketId) , getRemedyAuthenticationHeader());
+            final GetOutputMap outputmap = port.helpDeskQueryService(getRemedyInputMap(ticketId), getRemedyAuthenticationHeader());
+
+            if (outputmap == null || outputmap.getStatus() == null || outputmap.getUrgency() == null) {
+                throw new RemedyTicketerException("Unable to retrieve ticket, or ticket ID '" + ticketId + "' invalid.");
+            }
+
             LOG.info("get: found ticket: {} status: {}", ticketId, outputmap.getStatus());
             LOG.info("get: found ticket: {} urgency: {}", ticketId, outputmap.getUrgency());
 
@@ -319,7 +327,7 @@ public class RemedyTicketerPlugin implements TicketingPlugin {
 
 
     private String getSummary(final Ticket ticket) {
-    	final StringBuilder summary = new StringBuilder();
+        final StringBuilder summary = new StringBuilder();
         if (ticket.getAttributes().get(ATTRIBUTE_NODE_LABEL_ID) != null) {
             summary.append(ticket.getAttributes().get(ATTRIBUTE_NODE_LABEL_ID));
             summary.append(": OpenNMS: ");
@@ -386,7 +394,7 @@ public class RemedyTicketerPlugin implements TicketingPlugin {
     }
 
     private AuthenticationInfo getRemedyAuthenticationHeader() {
-    	final AuthenticationInfo requestHeader = new AuthenticationInfo();
+        final AuthenticationInfo requestHeader = new AuthenticationInfo();
         requestHeader.setUserName(m_configDao.getUserName());
         requestHeader.setPassword(m_configDao.getPassword());
 
@@ -407,7 +415,7 @@ public class RemedyTicketerPlugin implements TicketingPlugin {
 
 
     private CreateInputMap getRemedyCreateInputMap(final Ticket newTicket) {
-    	final CreateInputMap createInputMap = new CreateInputMap();
+        final CreateInputMap createInputMap = new CreateInputMap();
 
         // the only data set by the opennms ticket alarm
         createInputMap.setSummary(getSummary(newTicket));
@@ -454,55 +462,62 @@ public class RemedyTicketerPlugin implements TicketingPlugin {
      */
 
     private HPDIncidentInterfaceWSPortTypePortType getTicketServicePort(final String portname, final String endpoint) {
-        final QName hpdPortname = new QName("HPD_IncidentInterface_WS", portname);
-        final HPDIncidentInterfaceWSService service = new HPDIncidentInterfaceWSService(HPDIncidentInterfaceWSService.WSDL_LOCATION, hpdPortname);
-        final HPDIncidentInterfaceWSPortTypePortType port = service.getHPDIncidentInterfaceWSPortTypeSoap();
+        if (readPort == null) {
+            final QName hpdPortname = new QName("HPD_IncidentInterface_WS", portname);
+            final HPDIncidentInterfaceWSService service = new HPDIncidentInterfaceWSService(HPDIncidentInterfaceWSService.WSDL_LOCATION, hpdPortname);
+            final HPDIncidentInterfaceWSPortTypePortType port = service.getHPDIncidentInterfaceWSPortTypeSoap();
 
-        final Client cxfClient = ClientProxy.getClient(port);
+            final Client cxfClient = ClientProxy.getClient(port);
 
-        cxfClient.getRequestContext().put(Message.ENDPOINT_ADDRESS, endpoint);
-        final HTTPConduit http = (HTTPConduit) cxfClient.getConduit();
+            cxfClient.getRequestContext().put(Message.ENDPOINT_ADDRESS, endpoint);
+            final HTTPConduit http = (HTTPConduit) cxfClient.getConduit();
 
-        if (!m_configDao.getStrictSsl()) {
-            LOG.debug("Disabling strict SSL checking.");
-            // Accept all certificates
-            final TrustManager[] simpleTrustManager = new TrustManager[] { new AnyServerX509TrustManager() };
-            final TLSClientParameters tlsParams = new TLSClientParameters();
-            tlsParams.setTrustManagers(simpleTrustManager);
-            tlsParams.setDisableCNCheck(true);
-            http.setTlsClientParameters(tlsParams);
+            if (!m_configDao.getStrictSsl()) {
+                LOG.debug("Disabling strict SSL checking.");
+                // Accept all certificates
+                final TrustManager[] simpleTrustManager = new TrustManager[] { new AnyServerX509TrustManager() };
+                final TLSClientParameters tlsParams = new TLSClientParameters();
+                tlsParams.setTrustManagers(simpleTrustManager);
+                tlsParams.setDisableCNCheck(true);
+                http.setTlsClientParameters(tlsParams);
+            }
+            readPort = port;
         }
 
-        return port;
+        return readPort;
     }
 
 
     /**
-     * Convenience method for initialising the ticketServicePort and correctly setting the endpoint.
+     * Convenience method for initializing the ticketServicePort and correctly setting the endpoint.
      *
      * @return TicketServicePort to connect to the remote service.
      */
 
     private HPDIncidentInterfaceCreateWSPortTypePortType getCreateTicketServicePort(final String portname, final String endpoint) {
-        final QName hpdPortname = new QName("urn:HPD_IncidentInterface_Create_WS", portname);
-        final HPDIncidentInterfaceCreateWSService service = new HPDIncidentInterfaceCreateWSService(HPDIncidentInterfaceCreateWSService.WSDL_LOCATION, hpdPortname);
-        final HPDIncidentInterfaceCreateWSPortTypePortType port = service.getHPDIncidentInterfaceCreateWSPortTypeSoap();
+        if (createPort == null) {
+            final QName hpdPortname = new QName("urn:HPD_IncidentInterface_Create_WS", portname);
+            final HPDIncidentInterfaceCreateWSService service = new HPDIncidentInterfaceCreateWSService(HPDIncidentInterfaceCreateWSService.WSDL_LOCATION, hpdPortname);
+            final HPDIncidentInterfaceCreateWSPortTypePortType port = service.getHPDIncidentInterfaceCreateWSPortTypeSoap();
 
-        final Client cxfClient = ClientProxy.getClient(port);
+            final Client cxfClient = ClientProxy.getClient(port);
 
-        cxfClient.getRequestContext().put(Message.ENDPOINT_ADDRESS, endpoint);
-        final HTTPConduit http = (HTTPConduit) cxfClient.getConduit();
+            cxfClient.getRequestContext().put(Message.ENDPOINT_ADDRESS, endpoint);
+            final HTTPConduit http = (HTTPConduit) cxfClient.getConduit();
 
-        if (!m_configDao.getStrictSsl()) {
-            LOG.debug("Disabling strict SSL checking.");
-            // Accept all certificates
-            final TrustManager[] simpleTrustManager = new TrustManager[] { new AnyServerX509TrustManager() };
-            final TLSClientParameters tlsParams = new TLSClientParameters();
-            tlsParams.setTrustManagers(simpleTrustManager);
-            tlsParams.setDisableCNCheck(true);
-            http.setTlsClientParameters(tlsParams);
+            if (!m_configDao.getStrictSsl()) {
+                LOG.debug("Disabling strict SSL checking.");
+                // Accept all certificates
+                final TrustManager[] simpleTrustManager = new TrustManager[] { new AnyServerX509TrustManager() };
+                final TLSClientParameters tlsParams = new TLSClientParameters();
+                tlsParams.setTrustManagers(simpleTrustManager);
+                tlsParams.setDisableCNCheck(true);
+                http.setTlsClientParameters(tlsParams);
+            }
+
+            createPort = port;
         }
 
-        return port;
+        return createPort;
     }
 }

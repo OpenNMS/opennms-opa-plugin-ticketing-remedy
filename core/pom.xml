@@ -86,8 +86,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-             <groupId>org.slf4j</groupId>
-             <artifactId>slf4j-api</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.skjolber</groupId>
+            <artifactId>mockito-soap-cxf</artifactId>
+            <version>1.2.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

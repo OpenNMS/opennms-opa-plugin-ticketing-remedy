@@ -51,12 +51,12 @@
         <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
-        <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
+        <maven-failsafe-plugin.version>3.1.0</maven-failsafe-plugin.version>
         <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-resources-plugin.version>3.3.0</maven-resources-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <sign-maven-plugin.version>1.0.1</sign-maven-plugin.version>
         <wagon-ssh-external.version>3.5.3</wagon-ssh-external.version>
@@ -65,7 +65,7 @@
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <cxf.version>3.5.5</cxf.version>
         <cxf-xjc.version>3.3.2</cxf-xjc.version>
-        <junit.version>4.13.2</junit.version>
+        <junit.version>5.9.3</junit.version>
         <karaf.version>4.2.6</karaf.version>
         <osgi.version>6.0.0</osgi.version>
         <osgi.compendium.version>5.0.0</osgi.compendium.version>
@@ -97,6 +97,13 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                  <groupId>org.opennms.integration.api</groupId>
                  <artifactId>api</artifactId>
                  <version>${opennms.api.version.min}</version>
@@ -110,9 +117,8 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -139,24 +145,24 @@
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
-                	<groupId>org.eclipse.m2e</groupId>
-                	<artifactId>lifecycle-mapping</artifactId>
-                	<version>1.0.0</version>
-                	<configuration>
-                		<lifecycleMappingMetadata>
-                			<pluginExecutions>
-                				<pluginExecution>
-                					<pluginExecutionFilter>
-                						<groupId>org.commonjava.maven.plugins</groupId>
-                						<artifactId>directory-maven-plugin</artifactId>
-                						<versionRange>[1.0,)</versionRange>
-                						<goals><goal>directory-of</goal></goals>
-                					</pluginExecutionFilter>
-                					<action><ignore/></action>
-                				</pluginExecution>
-                			</pluginExecutions>
-                		</lifecycleMappingMetadata>
-                	</configuration>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.commonjava.maven.plugins</groupId>
+                                        <artifactId>directory-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals><goal>directory-of</goal></goals>
+                                    </pluginExecutionFilter>
+                                    <action><ignore/></action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

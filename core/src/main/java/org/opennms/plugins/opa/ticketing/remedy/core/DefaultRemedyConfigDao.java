@@ -73,7 +73,7 @@ public class DefaultRemedyConfigDao {
         final Object value = props.get(key);
 
         if (value == null) {
-        	return false;
+            return false;
         }
 
         if (value instanceof Boolean) {
@@ -90,52 +90,52 @@ public class DefaultRemedyConfigDao {
      * @return a {@link java.lang.String} object.
      */
     public String getUserName() {
-        return getStringProperty("remedy.username");
+        return getStringProperty("username");
     }
 
 
     String getPassword() {
-        return getStringProperty("remedy.password");
+        return getStringProperty("password");
     }
 
     String getAuthentication() {
-        return getStringProperty("remedy.authentication");
+        return getStringProperty("authentication");
     }
 
     String getLocale() {
-        return getStringProperty("remedy.locale");
+        return getStringProperty("locale");
     }
 
     String getTimeZone() {
-        return getStringProperty("remedy.timezone");
+        return getStringProperty("timezone");
     }
 
     String getEndPoint() {
-        return getStringProperty("remedy.endpoint");
+        return getStringProperty("endpoint");
     }
 
     boolean getStrictSsl() {
-        return getBooleanProperty("remedy.endpoint.strict-ssl");
+        return getBooleanProperty("endpoint.strict-ssl");
     }
 
     String getPortName() {
-        return getStringProperty("remedy.portname");
+        return getStringProperty("portname");
     }
 
     String getCreateEndPoint() {
-        return getStringProperty("remedy.createendpoint");
+        return getStringProperty("createendpoint");
     }
 
     boolean getCreateStrictSsl() {
-        return getBooleanProperty("remedy.createendpoint.strict-ssl");
+        return getBooleanProperty("createendpoint.strict-ssl");
     }
 
     String getCreatePortName() {
-        return getStringProperty("remedy.createportname");
+        return getStringProperty("createportname");
     }
 
     List<String> getTargetGroups() {
-        final String groupsString = getStringProperty("remedy.targetgroups");
+        final String groupsString = getStringProperty("targetgroups");
         if (groupsString != null) {
             return Arrays.asList(groupsString.trim().split(":"));
         }
@@ -143,89 +143,89 @@ public class DefaultRemedyConfigDao {
     }
 
     String getAssignedGroup() {
-        return getStringProperty("remedy.assignedgroup");
+        return getStringProperty("assignedgroup");
     }
 
     String getAssignedGroup(final String targetGroup) {
-        final String aGroup = getStringProperty("remedy.assignedgroup."+targetGroup);
+        final String aGroup = getStringProperty("assignedgroup."+targetGroup);
         return aGroup == null? getAssignedGroup() : aGroup;
     }
 
     String getFirstName() {
-        return getStringProperty("remedy.firstname");
+        return getStringProperty("firstname");
     }
 
     String getLastName() {
-        return getStringProperty("remedy.lastname");
+        return getStringProperty("lastname");
     }
 
     String getServiceCI() {
-        return getStringProperty("remedy.serviceCI");
+        return getStringProperty("serviceCI");
     }
 
     String getServiceCIReconID() {
-        return getStringProperty("remedy.serviceCIReconID");
+        return getStringProperty("serviceCIReconID");
     }
 
     String getAssignedSupportCompany() {
-        return getStringProperty("remedy.assignedsupportcompany");
+        return getStringProperty("assignedsupportcompany");
     }
 
     String getAssignedSupportCompany(final String targetGroup) {
-        final String aCompany = getStringProperty("remedy.assignedsupportcompany."+targetGroup);
+        final String aCompany = getStringProperty("assignedsupportcompany."+targetGroup);
         return aCompany == null? getAssignedSupportCompany() : aCompany;
     }
 
     String getAssignedSupportOrganization() {
-        return getStringProperty("remedy.assignedsupportorganization");
+        return getStringProperty("assignedsupportorganization");
     }
 
     String getAssignedSupportOrganization(final String targetGroup) {
-        final String anOrg = getStringProperty("remedy.assignedsupportorganization."+targetGroup);
+        final String anOrg = getStringProperty("assignedsupportorganization."+targetGroup);
         return anOrg == null? getAssignedSupportOrganization() : anOrg;
     }
 
     String getCategorizationtier1() {
-        return getStringProperty("remedy.categorizationtier1");
+        return getStringProperty("categorizationtier1");
     }
 
     String getCategorizationtier2() {
-        return getStringProperty("remedy.categorizationtier2");
+        return getStringProperty("categorizationtier2");
     }
 
     String getCategorizationtier3() {
-        return getStringProperty("remedy.categorizationtier3");
+        return getStringProperty("categorizationtier3");
     }
 
     String getServiceType() {
-        return getStringProperty("remedy.serviceType");
+        return getStringProperty("serviceType");
     }
 
     String getReportedSource() {
-        return getStringProperty("remedy.reportedSource");
+        return getStringProperty("reportedSource");
     }
 
     String getImpact() {
-        return getStringProperty("remedy.impact");
+        return getStringProperty("impact");
     }
 
     String getUrgency() {
-        return getStringProperty("remedy.urgency");
+        return getStringProperty("urgency");
     }
 
     String getResolution() {
-        return getStringProperty("remedy.resolution");
+        return getStringProperty("resolution");
     }
 
     String getReOpenStatusReason() {
-        return getStringProperty("remedy.reason.reopen");
+        return getStringProperty("reason.reopen");
     }
 
     String getResolvedStatusReason() {
-        return getStringProperty("remedy.reason.resolved");
+        return getStringProperty("reason.resolved");
     }
 
     String getCancelledStatusReason() {
-        return getStringProperty("remedy.reason.cancelled");
+        return getStringProperty("reason.cancelled");
     }
 }

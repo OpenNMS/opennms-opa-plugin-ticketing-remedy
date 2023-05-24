@@ -459,7 +459,7 @@
 
          <wsdl:input>
 
-            <soap:header message="s0:HelpDesk_Query_ServiceSoapIn" part="ARAuthenticate" use="literal" required="true">
+            <soap:header message="s0:HelpDesk_Query_ServiceSoapIn" part="ARAuthenticate" use="literal">
 
             </soap:header>
 
@@ -481,7 +481,7 @@
 
          <wsdl:input>
 
-            <soap:header message="s0:HelpDesk_QueryList_ServiceSoapIn" part="ARAuthenticate" use="literal" required="true">
+            <soap:header message="s0:HelpDesk_QueryList_ServiceSoapIn" part="ARAuthenticate" use="literal">
 
             </soap:header>
 
@@ -503,7 +503,7 @@
 
          <wsdl:input>
 
-            <soap:header message="s0:HelpDesk_Modify_ServiceSoapIn" part="ARAuthenticate" use="literal" required="true">
+            <soap:header message="s0:HelpDesk_Modify_ServiceSoapIn" part="ARAuthenticate" use="literal">
 
             </soap:header>
 
