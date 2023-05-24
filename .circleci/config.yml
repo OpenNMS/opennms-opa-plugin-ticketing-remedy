@@ -38,23 +38,6 @@ workflows:
                 - /^v.*/
             branches:
               ignore: /.*/
-      #- github-cli/release:
-      #    context:
-      #      - github-releases
-      #    token: GH_TOKEN
-      #    tag: $CIRCLE_TAG
-      #    title: The $CIRCLE_TAG release
-      #    files: ~/output/.*
-      #    prerelease: true
-      #    #notes: changelog.md
-      #    requires:
-      #      - prepare-release
-      #    filters:
-      #      tags:
-      #        only:
-      #          - /^v.*/
-      #      branches:
-      #        ignore: /.*/
       - publish-github-release:
           context:
             - github-releases
@@ -66,21 +49,6 @@ workflows:
                 - /^v.*/
             branches:
               ignore: /.*/
-      #- deploy-packages:
-      #    context:
-      #      - gpg-signing
-      #      - cloudsmith-publish-account
-      #    requires:
-      #      - tests
-      #      - build-debian
-      #    filters:
-      #      tags:
-      #        only:
-      #          - /^v.*/
-      #      branches:
-      #        only:
-      #          - main
-      #          - /release-.*/
 
 
 jobs:
@@ -89,9 +57,12 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      - run:
+          name: Create mega-POM for checksumming
+          command: find * -name pom.xml | xargs cat > /tmp/mega-pom.txt
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-{{ checksum "/tmp/mega-pom.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
       - run:
@@ -110,7 +81,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies-{{ checksum "pom.xml" }}
+          key: v1-dependencies-{{ checksum "/tmp/mega-pom.txt" }}
       - persist_to_workspace:
           root: ~/
           paths:
@@ -130,7 +101,7 @@ jobs:
       - run:
           name: Run integration tests
           command: |
-            mvn -DskipITs=false -DskipTests=false clean install test
+            mvn -DskipITs=false -DskipTests=false clean install
       - run:
           name: Save test results
           command: |
