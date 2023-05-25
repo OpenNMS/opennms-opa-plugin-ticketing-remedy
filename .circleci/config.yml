@@ -39,6 +39,7 @@ workflows:
               ignore: /.*/
       - deploy:
           context:
+            - "gpg-signing"
             - "OSSRH Principal"
           requires:
             - prepare-release
@@ -170,8 +171,10 @@ jobs:
               && sudo apt update \
               && sudo apt install gh -y
 
+              echo "* creating release from $tag tag"
               gh release create $tag --title "$tag Release" --notes "$tag prerelease!" --prerelease --generate-notes
 
+              echo "* uploading files to tag:" ~/output/*
               gh release upload $tag ~/output/*
             fi
 
