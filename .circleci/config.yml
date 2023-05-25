@@ -36,8 +36,10 @@ workflows:
               only:
                 - /^v.*/
             branches:
-              ignore: /.*/
-      - deploy:
+              only:
+                - /^main.*/
+                - /^release-.*/
+      - deploy-maven:
           context:
             - "gpg-signing"
             - "OSSRH Principal"
@@ -160,7 +162,7 @@ jobs:
       - store_test_results:
           path: ~/junit
 
-  deploy:
+  deploy-maven:
     executor: build-executor
     steps:
       - checkout
