@@ -80,11 +80,14 @@ commands:
               find ~/project \
                    -type f \
                    \
-                   -name \*.jar -o \
-                   -name \*.kar -o \
-                   -name \*.rpm -o \
-                   -name \*.deb \
+                   \( \
+                       -name \*.jar -o \
+                       -name \*.kar -o \
+                       -name \*.rpm -o \
+                       -name \*.deb \
+                   \) \
                    \
+                   -print \
                    -exec cp {} ~/output/ \
               \;
   release-lint:
@@ -127,11 +130,11 @@ jobs:
           name: Compile source without tests
           command: |
             mvn -DskipITs=true -DskipTests=true clean install
-      - gather-artifacts
       - save_cache:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "/tmp/mega-pom.txt" }}
+      - gather-artifacts
       - persist_to_workspace:
           root: ~/
           paths:
