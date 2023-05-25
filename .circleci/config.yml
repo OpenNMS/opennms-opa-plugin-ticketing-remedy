@@ -10,7 +10,6 @@ executors:
 orbs:
   cloudsmith: cloudsmith/cloudsmith@1.0.5
   sign-packages: opennms/sign-packages@2.3.0
-  #github-cli: circleci/github-cli@2.2.0
 
 workflows:
   build-deploy:
@@ -32,6 +31,17 @@ workflows:
       - prepare-release:
           requires:
             - tests
+          filters:
+            tags:
+              only:
+                - /^v.*/
+            branches:
+              ignore: /.*/
+      - deploy:
+          context:
+            - "OSSRH Principal"
+          requires:
+            - prepare-release
           filters:
             tags:
               only:
