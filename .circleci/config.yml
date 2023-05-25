@@ -191,6 +191,17 @@ jobs:
       - attach_workspace:
           at: ~/
       - release-lint
+      - run:
+          name: Validate artifacts
+          command: |
+            if [ "$(cd ~/output; ls -1 *.kar | wc -l)" -eq 0 ]; then
+              echo "ERROR: no .kar file was saved to ~/output"
+              exit 1
+            fi
+            if [ "$(cd ~/output; ls -1 *.jar | wc -l)" -eq 0 ]; then
+              echo "ERROR: no .jar files were saved to ~/output"
+              exit 1
+            fi
 
   publish-github-release:
     executor: build-executor
