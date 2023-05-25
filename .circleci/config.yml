@@ -50,7 +50,6 @@ workflows:
             branches:
               ignore: /.*/
 
-
 jobs:
   build:
     executor: build-executor
@@ -72,12 +71,8 @@ jobs:
       - run:
           name: Gather artifacts
           command: |
-              mkdir ~/output
-              # We need a better logic here
-              find ~/project -type f -regex ".*.jar" -exec cp {} ~/output \;
-              find ~/project -type f -regex ".*.rpm" -exec cp {} ~/output \;
-              find ~/project -type f -regex ".*.deb" -exec cp {} ~/output \;
-              find ~/project -type f -regex ".*.kar" -exec cp {} ~/output \;
+              mkdir -p ~/output
+              find ~/project -type f -name "*.kar" -exec cp {} ~/output/ \;
       - save_cache:
           paths:
             - ~/.m2
@@ -124,23 +119,9 @@ jobs:
       - sign-packages/setup-env:
           skip_if_forked_pr: true
       - run:
-          name: Deploy to Maven
+          name: Deploy to Maven Central
           command: |
             mvn -Prelease -s .circleci/.circleci.settings.xml -Ddisable.checkstyle=true -DskipTests -Dmaven.verify.skip=true -Dmaven.install.skip=true deploy
-
-  deploy-packages:
-    executor: cloudsmith/default
-    resource_class: small
-    steps:
-      - attach_workspace:
-          at: ~/
-
-      - cloudsmith/ensure-api-key
-      - cloudsmith/install-cli
-
-      - run:
-          name: Push packages to CloudSmith
-          command: .circleci/scripts/publish-cloudsmith.sh
 
   prepare-release:
     executor: build-executor
@@ -151,12 +132,8 @@ jobs:
       - run:
           name: Gather artifacts
           command: |
-              mkdir ~/output
-              # We need a better logic here
-              find ~/project -type f -regex ".*.jar" -exec cp {} ~/output \;
-              find ~/project -type f -regex ".*.rpm" -exec cp {} ~/output \;
-              find ~/project -type f -regex ".*.deb" -exec cp {} ~/output \;
-              find ~/project -type f -regex ".*.kar" -exec cp {} ~/output \;
+              mkdir -p ~/output
+              find ~/project -type f -name "*.kar" -exec cp {} ~/output/ \;
       - persist_to_workspace:
           root: ~/
           paths:
@@ -185,7 +162,7 @@ jobs:
 
               gh release create $tag --title "$tag Release" --notes "$tag prerelease!" --prerelease --generate-notes
 
-              gh release upload $tag ~/output/*.jar
+              gh release upload $tag ~/output/*
             fi
 
 
