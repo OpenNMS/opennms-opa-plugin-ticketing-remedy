@@ -134,6 +134,9 @@ jobs:
       - run:
           name: Deploy to Maven Central
           command: |
+            mkdir -p ~/.m2
+            echo "${GPG_SECRET_KEY}" | base64 -d > ~/.m2/sign-key.asc
+            export SIGN_KEY_PASS="$(echo "${GPG_PASSPHRASE}" | base64 -d)"
             mvn -Prelease -s .circleci/.circleci.settings.xml -Ddisable.checkstyle=true -DskipTests -Dmaven.verify.skip=true -Dmaven.install.skip=true deploy
 
   prepare-release:
