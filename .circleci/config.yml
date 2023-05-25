@@ -63,15 +63,59 @@ workflows:
             branches:
               ignore: /.*/
 
+commands:
+  create-mega-pom:
+    steps:
+      - run:
+          name: Create mega-POM for checksumming
+          command: git grep '<modelVersion>' | grep pom.xml | sort -u | xargs cat > /tmp/mega-pom.txt
+  gather-artifacts:
+    steps:
+      - run:
+          name: Gather artifacts
+          command: |
+              mkdir -p ~/output
+              find ~/project \
+                   -type f \
+                   \
+                   -name \*.jar -o \
+                   -name \*.kar -o \
+                   -name \*.rpm -o \
+                   -name \*.deb \
+                   \
+                   -exec cp {} ~/output/ \
+              \;
+  release-lint:
+    steps:
+      - run:
+          name: Check for common release issues
+          command: |
+            curl -L -o /tmp/release-lint.sh https://raw.githubusercontent.com/OpenNMS/opennms-repo/master/script/release-lint.sh
+            chmod 755 /tmp/release-lint.sh
+
+            LINT_WARN_ONLY=1
+            if [ -n "${CIRCLE_TAG}" ]; then
+              LINT_WARN_ONLY=0
+            fi
+            case "${CIRCLE_BRANCH}" in
+              main-*)
+                LINT_WARN_ONLY=0
+                ;;
+            esac
+
+            if [ "${LINT_WARN_ONLY}" -eq 1 ]; then
+              /tmp/release-lint.sh -w
+            else
+              /tmp/release-lint.sh
+            fi
+
 jobs:
   build:
     executor: build-executor
     resource_class: small
     steps:
       - checkout
-      - run:
-          name: Create mega-POM for checksumming
-          command: find * -name pom.xml | xargs cat > /tmp/mega-pom.txt
+      - create-mega-pom
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "/tmp/mega-pom.txt" }}
@@ -81,11 +125,7 @@ jobs:
           name: Compile source without tests
           command: |
             mvn -DskipITs=true -DskipTests=true clean install
-      - run:
-          name: Gather artifacts
-          command: |
-              mkdir -p ~/output
-              find ~/project -type f -name "*.kar" -exec cp {} ~/output/ \;
+      - gather-artifacts
       - save_cache:
           paths:
             - ~/.m2
@@ -125,6 +165,7 @@ jobs:
     steps:
       - checkout
 
+      - create-mega-pom
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
@@ -145,15 +186,13 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run:
-          name: Gather artifacts
-          command: |
-              mkdir -p ~/output
-              find ~/project -type f -name "*.kar" -exec cp {} ~/output/ \;
+      - release-lint
+      - gather-artifacts
       - persist_to_workspace:
           root: ~/
           paths:
             - output
+
   publish-github-release:
     executor: build-executor
     working_directory: ~/project
