@@ -4,15 +4,19 @@
 
     <feature name="remedy-ticketing" description="OpenNMS :: OPA :: Ticketing :: Remedy ITSM" version="${project.version}">
         <feature>aries-blueprint</feature>
+        <feature version="${cxf.version}">cxf-bindings-soap</feature>
+        <feature version="${cxf.version}">cxf-databinding-jaxb</feature>
         <feature version="${cxf.version}">cxf-http-client</feature>
         <feature version="${cxf.version}">cxf-jaxb</feature>
-        <feature version="${cxf.version}">cxf-jaxws</feature>
+        <feature version="${cxf.version}">cxf-wsdl</feature>
 
         <!-- the above features should already (mostly) be available in OpenNMS core, but the `cxf-jxc-runtime` feature isn't
              there, so we're including a few things as an explicit bundle dependency so they show up in the .kar -->
         <bundle start-level="35" dependency="true">mvn:org.apache.commons/commons-lang3/${commons-lang3.version}</bundle>
-        <bundle start-level="40">mvn:org.apache.cxf.karaf/cxf-karaf-commands/${cxf.version}</bundle>
-        <bundle start-level="40">mvn:jakarta.servlet/jakarta.servlet-api/4.0.4</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf.karaf/cxf-karaf-commands/${cxf.version}</bundle>
+        <bundle start-level="40" dependency="true">mvn:jakarta.servlet/jakarta.servlet-api/4.0.4</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-frontend-simple/${cxf.version}</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-frontend-jaxws/${cxf.version}</bundle>
         <bundle start-level="40" dependency="true">mvn:org.apache.cxf.xjc-utils/cxf-xjc-runtime/${cxf-xjc.version}</bundle>
 
         <feature dependency="true" version="[${opennms.api.version.min},${opennms.api.version.max})">opennms-integration-api</feature>
