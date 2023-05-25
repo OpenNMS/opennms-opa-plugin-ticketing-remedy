@@ -77,7 +77,7 @@ commands:
           name: Gather artifacts
           command: |
               mkdir -p ~/output
-              find ~/project \
+              find . \
                    -type f \
                    \
                    -name \*.jar -o \
@@ -125,8 +125,7 @@ jobs:
             - v1-dependencies-
       - run:
           name: Compile source without tests
-          command: |
-            mvn -DskipITs=true -DskipTests=true clean install
+          command: mvn -DskipITs=true -DskipTests=true clean install
       - gather-artifacts
       - save_cache:
           paths:
@@ -189,11 +188,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - release-lint
-      - gather-artifacts
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - output
 
   publish-github-release:
     executor: build-executor
