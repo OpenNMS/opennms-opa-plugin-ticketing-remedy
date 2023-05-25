@@ -3,7 +3,7 @@
     <groupId>org.opennms.plugins.opa.ticketing</groupId>
     <artifactId>org.opennms.plugins.opa.ticketing.remedy</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>OpenNMS :: OPA :: Ticketing :: Remedy ITSM</name>
     <url>https://github.com/OpenNMS/opennms-opa-plugin-ticketing-remedy</url>
     <description>An OpenNMS ticketing API plugin for Remedy ITSM.</description>
