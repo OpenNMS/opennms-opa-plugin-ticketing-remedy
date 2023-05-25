@@ -48,7 +48,9 @@ workflows:
               only:
                 - /^v.*/
             branches:
-              ignore: /.*/
+              only:
+                - /^main.*/
+                - /^release-.*/
       - publish-github-release:
           context:
             - github-releases
