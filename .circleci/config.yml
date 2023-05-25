@@ -68,7 +68,7 @@ commands:
     steps:
       - run:
           name: Create mega-POM for checksumming
-          command: git grep '<modelVersion>' | grep pom.xml | sort -u | xargs cat > /tmp/mega-pom.txt
+          command: git grep -l '<modelVersion>' | grep pom.xml | sort -u | xargs cat > /tmp/mega-pom.txt
   gather-artifacts:
     steps:
       - run:
